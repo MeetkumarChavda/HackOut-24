@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 import pickle
+import pandas as pd
 from sklearn.metrics import accuracy_score
 from sklearn.linear_model import LogisticRegression
 
@@ -29,8 +30,11 @@ def load_model(filename):
     with open(filename, 'rb') as file:
         return pickle.load(file)
 
+def load_data(file_path):
+    """Load data from a CSV file."""
+    return pd.read_csv(file_path)
+
 def predict_with_model(request):
-    # react to do with input#
     """Predict using multiple models and return their accuracies."""
     # Load all models
     decision_tree = load_model('DecisionTree.pkl')
@@ -39,43 +43,59 @@ def predict_with_model(request):
     svm_classifier = load_model('SVMClassifier.pkl')
     xgboost = load_model('XGBoost.pkl')
 
-    # Assuming Xtest is your test data
-    Xtest = ... # react to do with input# Load or prepare your test data here
+    # Load or prepare your test data
+    test_data = load_data('test_data.csv')
+    Xtest = test_data.drop('target', axis=1)  # Features
+    Ytest = test_data['target']  # Labels
 
     # Predictions
     dt_predictions = decision_tree.predict(Xtest)
-    # Repeat for other models...
+    nb_predictions = nb_classifier.predict(Xtest)
+    rf_predictions = random_forest.predict(Xtest)
+    svm_predictions = svm_classifier.predict(Xtest)
+    xgb_predictions = xgboost.predict(Xtest)
 
     # Accuracy calculations
-    Ytest = ...  # Load or prepare your true labels here
     dt_accuracy = accuracy_score(Ytest, dt_predictions)
-    # Repeat for other models...
+    nb_accuracy = accuracy_score(Ytest, nb_predictions)
+    rf_accuracy = accuracy_score(Ytest, rf_predictions)
+    svm_accuracy = accuracy_score(Ytest, svm_predictions)
+    xgb_accuracy = accuracy_score(Ytest, xgb_predictions)
 
     return JsonResponse({
         'Decision Tree Accuracy': dt_accuracy,
-        'nb_classifier' : nb_classifier,
-        "random_forest" : random_forest,
-        "svm_classifier": svm_classifier,
-        "xgboost Accuracy": xgboost        
+        'Naive Bayes Accuracy': nb_accuracy,
+        'Random Forest Accuracy': rf_accuracy,
+        'SVM Accuracy': svm_accuracy,
+        'XGBoost Accuracy': xgb_accuracy
     })
 
 def predict(request):
-    """Train a Logistic Regression model and make predictions."""
-    # Assuming Xtrain and Ytrain are your training data
-    Xtrain = ...  # Load or prepare your training data here
-    Ytrain = ...  # Load or prepare your training labels here
+    """Train a Logistic Regression model and make predictions based on user input."""
+    if request.method == 'POST':
+        try:
+            input_data = request.POST
+            input_df = pd.DataFrame([input_data])
 
-    # Train Logistic Regression model
-    log_reg = LogisticRegression(random_state=2)
-    log_reg.fit(Xtrain, Ytrain)
+            # Load or prepare your training data
+            train_data = load_data('train_data.csv')
+            Xtrain = train_data.drop('target', axis=1)  # Features
+            Ytrain = train_data['target']  # Labels
 
-    # Predict using the trained model
-    Xtest = ...  # Load or prepare your test data here
-    predictions = log_reg.predict(Xtest)
+            # Train Logistic Regression model
+            log_reg = LogisticRegression(random_state=2)
+            log_reg.fit(Xtrain, Ytrain)
 
-    # You might want to pass predictions to the template
-    context = {
-        'predictions': predictions,
-    }
+            # Predict using the trained model
+            predictions = log_reg.predict(input_df)
 
-    return render(request, 'predict.html', context=context)
+            # Pass predictions to the template
+            context = {
+                'predictions': predictions.tolist(),  # Convert numpy array to list for JSON serialization
+            }
+
+            return render(request, 'predict.html', context=context)
+        except Exception as e:
+            return HttpResponse(f"Error: {e}")
+    else:
+        return HttpResponse("Please send a POST request with input data.")
