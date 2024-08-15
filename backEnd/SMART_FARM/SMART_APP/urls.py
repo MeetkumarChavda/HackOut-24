@@ -1,5 +1,13 @@
 from django.urls import path
-from .views import home_view, shop_view, yield_analysis_view, cart_view, sign_in_view, sign_out_view
+from .views import (
+    home_view, 
+    shop_view, 
+    yield_analysis_view, 
+    cart_view, 
+    sign_in_view, 
+    sign_out_view,
+    predict
+)
 
 urlpatterns = [
     path('', home_view, name='home'),
@@ -8,6 +16,5 @@ urlpatterns = [
     path('cart/', cart_view, name='cart'),
     path('sign-in/', sign_in_view, name='sign_in'),
     path('sign-out/', sign_out_view, name='sign_out'),
-    path('predict/', views.predict, name='predict'),
-
+    path('predict/', predict, name='predict'),  # Use 'predict' directly
 ]
