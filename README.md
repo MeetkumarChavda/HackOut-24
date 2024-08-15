@@ -25,15 +25,14 @@
 - **APIs**: Django REST Framework
 
 ## UI
-[](img/home.png)
-[](img/cart.png)
-[](img/Yield%20Analysis.png)
-
+![Home](img/home.png)
+![Cart](img/cart.png)
+![Yield Analysis](img/Yield%20Analysis.png)
 ## Model Evaluation
 
 The machine learning models used in AgroPredicts have been rigorously tested for accuracy:
-[](img/accuracy.png)
-[](img/Heatmap.png)
+![Accuracy](img/accuracy.png)
+![Heatmap](img/Heatmap.png)
 
 - **Decision Tree**: 89.8%
 - **Naive Bayes**: 98.9%
